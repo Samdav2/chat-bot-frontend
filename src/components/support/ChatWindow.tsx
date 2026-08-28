@@ -65,6 +65,7 @@ export const ChatWindow: React.FC<ChatWindowProps> = ({
   if (!conversation) return null;
 
   const isAssignedToCurrentAgent = conversation.assigned_agent_id === currentAgentId;
+  const messages = conversation.messages || [];
 
   return (
     <div className="flex-1 flex flex-col h-full bg-slate-950 overflow-hidden relative">
@@ -88,12 +89,12 @@ export const ChatWindow: React.FC<ChatWindowProps> = ({
           </p>
         </div>
 
-        {conversation.messages.length === 0 ? (
+        {messages.length === 0 ? (
           <div className="py-12 text-center text-xs text-slate-500">
             No messages recorded in this conversation ticket yet.
           </div>
         ) : (
-          conversation.messages.map((msg) => (
+          messages.map((msg) => (
             <MessageBubble
               key={msg.id || `${msg.created_at}-${msg.sender_id}`}
               message={msg}

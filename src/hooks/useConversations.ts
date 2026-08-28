@@ -76,7 +76,9 @@ export function useConversations() {
         const response = await apiClient.post<ApiResponse<ConversationDetail>>(`/conversations/${id}/claim`);
         if (response.data.success) {
           const updated = response.data.data;
-          setActiveConversation(updated);
+          setActiveConversation((prev) =>
+            prev ? { ...prev, ...updated, messages: prev.messages || [] } : { ...updated, messages: [] }
+          );
           
           // Update item in list
           setConversations((prev) =>
@@ -103,7 +105,9 @@ export function useConversations() {
         const response = await apiClient.post<ApiResponse<ConversationDetail>>(`/conversations/${id}/close`);
         if (response.data.success) {
           const updated = response.data.data;
-          setActiveConversation(updated);
+          setActiveConversation((prev) =>
+            prev ? { ...prev, ...updated, messages: prev.messages || [] } : { ...updated, messages: [] }
+          );
           
           // Update item in list
           setConversations((prev) =>
@@ -136,13 +140,14 @@ export function useConversations() {
     // Append to active conversation if open
     setActiveConversation((prev) => {
       if (prev && prev.id === wsPayload.conversationId) {
+        const currentMessages = prev.messages || [];
         // Prevent duplicate messages if ID exists
-        if (prev.messages.some((m) => m.id === newMessage.id)) {
+        if (currentMessages.some((m) => m.id === newMessage.id)) {
           return prev;
         }
         return {
           ...prev,
-          messages: [...prev.messages, newMessage],
+          messages: [...currentMessages, newMessage],
           latest_message: newMessage,
         };
       }
