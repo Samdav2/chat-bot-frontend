@@ -37,8 +37,23 @@ export function useChatWebSocket({
       return;
     }
 
+    let host = WS_BASE_HOST;
+    if (typeof window !== 'undefined') {
+      const apiEnv = process.env.NEXT_PUBLIC_API_URL;
+      if (apiEnv && apiEnv.startsWith('http')) {
+        try {
+          const urlObj = new URL(apiEnv);
+          host = urlObj.host;
+        } catch {
+          host = window.location.host;
+        }
+      } else if (window.location.host) {
+        host = window.location.host;
+      }
+    }
+
     const wsProtocol = typeof window !== 'undefined' && window.location.protocol === 'https:' ? 'wss:' : 'ws:';
-    const wsUrl = `${wsProtocol}//${WS_BASE_HOST}/api/v1/ws/chat/${conversationId}?agent_id=${agentId}`;
+    const wsUrl = `${wsProtocol}//${host}/api/v1/ws/chat/${conversationId}?agent_id=${agentId}`;
 
     console.log(`[WS Connecting] Ticket #${conversationId} as Agent #${agentId} -> ${wsUrl}`);
     setConnectionError(null);
@@ -54,7 +69,7 @@ export function useChatWebSocket({
 
     socket.onmessage = (event) => {
       try {
-        const payload: WSPayload = JSON.parse(event.data);
+        const payload = JSON.parse(event.data);
         onMessageReceivedRef.current(payload);
       } catch (err) {
         console.error('Error parsing WebSocket frame:', err, event.data);
@@ -79,6 +94,7 @@ export function useChatWebSocket({
       socketRef.current = null;
     };
   }, [conversationId, agentId]);
+
 
   const sendMessage = useCallback(
     async (content: string) => {

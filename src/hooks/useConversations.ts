@@ -44,12 +44,39 @@ export function useConversations() {
     }
   }, [activeFilter]);
 
-  // Initial fetch and polling interval (every 10 seconds for list updates)
+  // Initial fetch and polling interval for summary list
   useEffect(() => {
     fetchConversations();
-    const interval = setInterval(fetchConversations, 10000);
+    const interval = setInterval(fetchConversations, 8000);
     return () => clearInterval(interval);
   }, [fetchConversations]);
+
+  // Active conversation live polling fallback (every 3s)
+  useEffect(() => {
+    if (!activeConversation?.id) return;
+    
+    const activeId = activeConversation.id;
+    const pollInterval = setInterval(async () => {
+      try {
+        const response = await apiClient.get<ApiResponse<ConversationDetail>>(`/conversations/${activeId}`);
+        if (response.data.success && response.data.data) {
+          const detail = response.data.data;
+          setActiveConversation((prev) => {
+            if (!prev || prev.id !== activeId) return prev;
+            return {
+              ...prev,
+              ...detail,
+              messages: detail.messages || [],
+            };
+          });
+        }
+      } catch (err) {
+        // silent polling catch
+      }
+    }, 3000);
+
+    return () => clearInterval(pollInterval);
+  }, [activeConversation?.id]);
 
   // Fetch single conversation detail
   const selectConversation = useCallback(async (id: number) => {
@@ -127,19 +154,27 @@ export function useConversations() {
   );
 
   // Append new incoming or outgoing message from WebSocket frame or API call
-  const handleIncomingWSMessage = useCallback((wsPayload: WSPayload) => {
+  const handleIncomingWSMessage = useCallback((wsPayload: any) => {
+    const rawConvId = wsPayload.conversationId ?? wsPayload.conversation_id;
+    const rawRole = wsPayload.senderRole ?? wsPayload.sender_role;
+    const rawSenderId = wsPayload.senderId ?? wsPayload.sender_id;
+    const rawCreatedAt = wsPayload.timestamp ?? wsPayload.created_at ?? new Date().toISOString();
+
+    if (!rawConvId) return;
+
+    const convId = Number(rawConvId);
     const newMessage: Message = {
       id: wsPayload.id || Date.now(),
-      conversation_id: wsPayload.conversationId,
-      sender_role: wsPayload.senderRole,
-      sender_id: wsPayload.senderId,
+      conversation_id: convId,
+      sender_role: (rawRole || 'USER') as any,
+      sender_id: Number(rawSenderId || 0),
       content: wsPayload.content,
-      created_at: wsPayload.timestamp || new Date().toISOString(),
+      created_at: rawCreatedAt,
     };
 
     // Append to active conversation if open
     setActiveConversation((prev) => {
-      if (prev && prev.id === wsPayload.conversationId) {
+      if (prev && Number(prev.id) === convId) {
         const currentMessages = prev.messages || [];
         // Prevent duplicate messages if ID exists
         if (currentMessages.some((m) => m.id === newMessage.id)) {
@@ -157,7 +192,7 @@ export function useConversations() {
     // Update latest_message in conversations list
     setConversations((prev) =>
       prev.map((c) => {
-        if (c.id === wsPayload.conversationId) {
+        if (Number(c.id) === convId) {
           return {
             ...c,
             latest_message: newMessage,
@@ -168,6 +203,7 @@ export function useConversations() {
       })
     );
   }, []);
+
 
   // Computed filtered list based on search query
   const filteredConversations = conversations.filter((c) => {
