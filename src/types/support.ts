@@ -6,6 +6,8 @@ export interface Agent {
   email: string;
   full_name: string;
   is_online: boolean;
+  telegram_chat_id?: string | null;
+  telegram_username?: string | null;
   created_at: string;
 }
 
@@ -13,6 +15,16 @@ export interface AgentCreateSchema {
   email: string;
   password: string;
   full_name: string;
+  telegram_chat_id?: string;
+  telegram_username?: string;
+}
+
+export interface AgentUpdateSchema {
+  full_name?: string;
+  email?: string;
+  password?: string;
+  telegram_chat_id?: string;
+  telegram_username?: string;
 }
 
 export interface User {

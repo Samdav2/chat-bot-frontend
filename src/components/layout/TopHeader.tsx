@@ -18,8 +18,8 @@ export const TopHeader: React.FC = () => {
           </span>
         </div>
         <span className="text-slate-700">|</span>
-        <span className="text-xs text-slate-400 font-mono hidden sm:inline-block">
-          FastAPI Redis Hybrid Bot v1.0
+        <span className="text-xs text-slate-400 font-medium hidden sm:inline-block">
+          Live Customer Support Portal
         </span>
       </div>
 

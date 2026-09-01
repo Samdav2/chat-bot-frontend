@@ -13,8 +13,8 @@ export const Sidebar: React.FC = () => {
 
   const navItems = [
     { label: 'Live Support', href: '/support', icon: MessageSquare },
-    { label: 'Analytics', href: '#', icon: BarChart3, disabled: true },
-    { label: 'Settings', href: '#', icon: Settings, disabled: true },
+    { label: 'Analytics', href: '/analytics', icon: BarChart3 },
+    { label: 'Settings', href: '/settings', icon: Settings },
   ];
 
   return (
@@ -29,23 +29,21 @@ export const Sidebar: React.FC = () => {
         <nav className="flex flex-col space-y-3">
           {navItems.map((item) => {
             const Icon = item.icon;
-            const isActive = pathname === item.href;
+            const isActive = pathname === item.href || (item.href !== '/support' && pathname.startsWith(item.href));
             return (
               <Link
                 key={item.label}
-                href={item.disabled ? '#' : item.href}
+                href={item.href}
                 className={`p-3 rounded-xl transition-all relative group ${
                   isActive
                     ? 'bg-indigo-600/20 text-indigo-400 border border-indigo-500/30'
-                    : item.disabled
-                    ? 'text-slate-700 cursor-not-allowed'
                     : 'text-slate-400 hover:bg-slate-900 hover:text-slate-200'
                 }`}
                 title={item.label}
               >
                 <Icon className="w-5 h-5" />
                 <span className="absolute left-full ml-3 px-2 py-1 bg-slate-800 text-slate-100 text-xs font-medium rounded-md opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none whitespace-nowrap shadow-md z-50">
-                  {item.label} {item.disabled && '(Coming soon)'}
+                  {item.label}
                 </span>
               </Link>
             );

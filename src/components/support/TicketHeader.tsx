@@ -69,17 +69,52 @@ export const TicketHeader: React.FC<TicketHeaderProps> = ({
       </div>
 
       <div className="flex items-center space-x-3">
+        {conversation.status === 'BOT_ACTIVE' && (
+          <>
+            <Button
+              onClick={onClaim}
+              isLoading={isLoading}
+              variant="primary"
+              size="sm"
+              className="shadow-indigo-600/30"
+            >
+              <UserCheck className="w-4 h-4 mr-1.5" />
+              Take Over Chat
+            </Button>
+            <Button
+              onClick={onClose}
+              isLoading={isLoading}
+              variant="danger"
+              size="sm"
+            >
+              <CheckCircle2 className="w-4 h-4 mr-1.5" />
+              Resolve & Close
+            </Button>
+          </>
+        )}
+
         {conversation.status === 'PENDING_AGENT' && (
-          <Button
-            onClick={onClaim}
-            isLoading={isLoading}
-            variant="primary"
-            size="sm"
-            className="shadow-indigo-600/30"
-          >
-            <UserCheck className="w-4 h-4 mr-1.5" />
-            Claim Ticket
-          </Button>
+          <>
+            <Button
+              onClick={onClaim}
+              isLoading={isLoading}
+              variant="primary"
+              size="sm"
+              className="shadow-indigo-600/30"
+            >
+              <UserCheck className="w-4 h-4 mr-1.5" />
+              Claim Ticket
+            </Button>
+            <Button
+              onClick={onClose}
+              isLoading={isLoading}
+              variant="danger"
+              size="sm"
+            >
+              <CheckCircle2 className="w-4 h-4 mr-1.5" />
+              Resolve & Close
+            </Button>
+          </>
         )}
 
         {conversation.status === 'HUMAN_ACTIVE' && (

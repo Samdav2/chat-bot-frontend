@@ -11,6 +11,7 @@ interface AuthContextType {
   isLoading: boolean;
   login: (token: string, agent: Agent) => void;
   logout: () => void;
+  updateAgent: (updatedAgent: Agent) => void;
   toggleOnlineStatus: () => Promise<void>;
 }
 
@@ -68,6 +69,11 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     window.location.href = '/login';
   }, []);
 
+  const updateAgent = useCallback((updatedAgent: Agent) => {
+    setAgent(updatedAgent);
+    localStorage.setItem('agent_user', JSON.stringify(updatedAgent));
+  }, []);
+
   const toggleOnlineStatus = useCallback(async () => {
     if (!agent) return;
     const updatedStatus = !agent.is_online;
@@ -89,6 +95,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         isLoading,
         login,
         logout,
+        updateAgent,
         toggleOnlineStatus,
       }}
     >

@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
-import { Send, Zap, Lock, UserCheck } from 'lucide-react';
+import { Send, Zap, Lock, UserCheck, Bot } from 'lucide-react';
 import { QuickResponses } from '@/components/ui/QuickResponses';
 import { ConversationStatus } from '@/types/support';
 
@@ -26,6 +26,7 @@ export const MessageInput: React.FC<MessageInputProps> = ({
 
   const isClosed = status === 'CLOSED';
   const isPending = status === 'PENDING_AGENT';
+  const isBotActive = status === 'BOT_ACTIVE';
   const isLocked = isClosed || (status === 'HUMAN_ACTIVE' && !isAssignedToCurrentAgent);
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -64,7 +65,7 @@ export const MessageInput: React.FC<MessageInputProps> = ({
           {onClaimTicket && (
             <button
               onClick={onClaimTicket}
-              className="inline-flex items-center px-4 py-2 text-xs font-semibold text-white bg-indigo-600 hover:bg-indigo-500 rounded-lg shadow-md transition-colors"
+              className="inline-flex items-center px-4 py-2 text-xs font-semibold text-white bg-indigo-600 hover:bg-indigo-500 rounded-lg shadow-md transition-colors cursor-pointer"
             >
               <UserCheck className="w-4 h-4 mr-1.5" />
               Claim Ticket to Reply
@@ -88,6 +89,24 @@ export const MessageInput: React.FC<MessageInputProps> = ({
 
   return (
     <div className="bg-slate-900 border-t border-slate-800 relative">
+      {isBotActive && (
+        <div className="px-4 py-2 bg-indigo-950/50 border-b border-indigo-900/50 flex items-center justify-between text-xs text-indigo-300">
+          <span className="flex items-center gap-1.5 font-medium">
+            <Bot className="w-4 h-4 text-indigo-400" />
+            Bot mode active. Sending a message or clicking Take Over transfers chat to you.
+          </span>
+          {onClaimTicket && (
+            <button
+              type="button"
+              onClick={onClaimTicket}
+              className="px-2.5 py-1 text-xs font-semibold bg-indigo-600 hover:bg-indigo-500 text-white rounded-md shadow-sm transition-colors cursor-pointer"
+            >
+              Take Over Chat
+            </button>
+          )}
+        </div>
+      )}
+
       {showTemplates && <QuickResponses onSelect={handleSelectTemplate} />}
 
       <form onSubmit={handleSubmit} className="p-4 flex items-center space-x-3">
