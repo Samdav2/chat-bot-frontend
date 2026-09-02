@@ -36,7 +36,7 @@ export const TicketList: React.FC<TicketListProps> = ({
   onSearchChange,
 }) => {
   return (
-    <div className="w-80 lg:w-96 flex flex-col h-full bg-slate-900 border-r border-slate-800 shrink-0">
+    <div className="w-full md:w-80 lg:w-96 flex flex-col h-full bg-slate-900 border-r border-slate-800 shrink-0">
       {/* Search & Header */}
       <div className="p-4 border-b border-slate-800/80 space-y-3">
         <div className="flex items-center justify-between">
