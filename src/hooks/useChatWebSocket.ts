@@ -97,24 +97,32 @@ export function useChatWebSocket({
 
 
   const sendMessage = useCallback(
-    async (content: string) => {
-      if (!conversationId || !content.trim()) return false;
+    async (content: string, media_url?: string | null, media_type?: string | null) => {
+      if (!conversationId || (!content.trim() && !media_url)) return false;
+
+      const payload = {
+        content: content.trim(),
+        media_url: media_url || null,
+        media_type: media_type || null,
+      };
 
       // 1. Send via WebSocket if connected
       if (socketRef.current && socketRef.current.readyState === WebSocket.OPEN) {
-        socketRef.current.send(JSON.stringify({ content }));
+        socketRef.current.send(JSON.stringify(payload));
         return true;
       } else {
         // 2. Fallback to REST API POST /conversations/{id}/messages
         console.warn('WebSocket not active. Dispatching via REST API fallback...');
         try {
-          const res = await apiClient.post(`/conversations/${conversationId}/messages`, { content });
+          const res = await apiClient.post(`/conversations/${conversationId}/messages`, payload);
           if (res.data.success && agentId) {
             onMessageReceivedRef.current({
               conversationId,
               senderRole: 'AGENT',
               senderId: agentId,
-              content,
+              content: content.trim(),
+              media_url: media_url || null,
+              media_type: media_type || null,
               timestamp: new Date().toISOString(),
             });
             return true;

@@ -153,12 +153,36 @@ export function useConversations() {
     []
   );
 
+  // Upload media image file helper
+  const uploadMedia = useCallback(async (file: File) => {
+    try {
+      const formData = new FormData();
+      formData.append('file', file);
+      const response = await apiClient.post<ApiResponse<{ media_url: string; media_type: string }>>(
+        '/conversations/upload-media',
+        formData,
+        {
+          headers: { 'Content-Type': 'multipart/form-data' },
+        }
+      );
+      if (response.data.success) {
+        return response.data.data;
+      }
+    } catch (err: any) {
+      console.error('Failed to upload media:', err);
+      alert(err.response?.data?.detail || err.response?.data?.message || 'Failed to upload image file.');
+    }
+    return null;
+  }, []);
+
   // Append new incoming or outgoing message from WebSocket frame or API call
   const handleIncomingWSMessage = useCallback((wsPayload: any) => {
     const rawConvId = wsPayload.conversationId ?? wsPayload.conversation_id;
     const rawRole = wsPayload.senderRole ?? wsPayload.sender_role;
     const rawSenderId = wsPayload.senderId ?? wsPayload.sender_id;
     const rawCreatedAt = wsPayload.timestamp ?? wsPayload.created_at ?? new Date().toISOString();
+    const mediaUrl = wsPayload.mediaUrl ?? wsPayload.media_url;
+    const mediaType = wsPayload.mediaType ?? wsPayload.media_type;
 
     if (!rawConvId) return;
 
@@ -169,6 +193,8 @@ export function useConversations() {
       sender_role: (rawRole || 'USER') as any,
       sender_id: Number(rawSenderId || 0),
       content: wsPayload.content,
+      media_url: mediaUrl,
+      media_type: mediaType,
       created_at: rawCreatedAt,
     };
 
@@ -240,6 +266,7 @@ export function useConversations() {
     selectConversation,
     claimTicket,
     closeTicket,
+    uploadMedia,
     handleIncomingWSMessage,
   };
 }

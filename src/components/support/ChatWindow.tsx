@@ -14,7 +14,10 @@ interface ChatWindowProps {
   isLoading: boolean;
   onClaimTicket: (id: number) => void;
   onCloseTicket: (id: number) => void;
-  onSendMessage: (text: string) => Promise<boolean>;
+  onSendMessage: (text: string, media_url?: string | null, media_type?: string | null) => Promise<boolean>;
+  onUploadMedia?: (file: File) => Promise<{ media_url: string; media_type: string } | null>;
+  onBackToList?: () => void;
+  onToggleDetails?: () => void;
   isActionLoading: boolean;
 }
 
@@ -26,6 +29,9 @@ export const ChatWindow: React.FC<ChatWindowProps> = ({
   onClaimTicket,
   onCloseTicket,
   onSendMessage,
+  onUploadMedia,
+  onBackToList,
+  onToggleDetails,
   isActionLoading,
 }) => {
   const messagesEndRef = useRef<HTMLDivElement>(null);
@@ -76,6 +82,8 @@ export const ChatWindow: React.FC<ChatWindowProps> = ({
         isConnected={isConnected}
         onClaim={() => onClaimTicket(conversation.id)}
         onClose={() => onCloseTicket(conversation.id)}
+        onBackToList={onBackToList}
+        onToggleDetails={onToggleDetails}
         isLoading={isActionLoading}
       />
 
@@ -108,6 +116,7 @@ export const ChatWindow: React.FC<ChatWindowProps> = ({
       {/* Interactive Message Input Box */}
       <MessageInput
         onSendMessage={onSendMessage}
+        onUploadMedia={onUploadMedia}
         onClaimTicket={() => onClaimTicket(conversation.id)}
         status={conversation.status}
         isAssignedToCurrentAgent={isAssignedToCurrentAgent}

@@ -42,6 +42,8 @@ export interface Message {
   sender_role: SenderRole;
   sender_id: number;
   content: string;
+  media_url?: string | null;
+  media_type?: string | null;
   created_at: string;
 }
 
@@ -76,14 +78,24 @@ export interface TokenSchema {
 export interface WSPayload {
   id?: number;
   conversationId: number;
+  conversation_id?: number;
   senderRole: SenderRole;
+  sender_role?: SenderRole;
   senderId: number;
+  sender_id?: number;
   content: string;
+  mediaUrl?: string | null;
+  media_url?: string | null;
+  mediaType?: string | null;
+  media_type?: string | null;
   timestamp?: string;
+  created_at?: string;
 }
 
 export interface MessageCreateSchema {
   content: string;
+  media_url?: string | null;
+  media_type?: string | null;
 }
 
 export type TicketFilterType = 'ALL' | ConversationStatus;
