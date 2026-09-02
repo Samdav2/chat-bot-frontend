@@ -1,16 +1,17 @@
 import axios from 'axios';
-import { API_BASE_URL } from './constants';
+import { getApiBaseUrl } from './constants';
 
 export const apiClient = axios.create({
-  baseURL: API_BASE_URL,
+  baseURL: getApiBaseUrl(),
   headers: {
     'Content-Type': 'application/json',
   },
 });
 
-// Request Interceptor: Attach JWT Bearer Token
+// Request Interceptor: Attach JWT Bearer Token and ensure dynamic baseURL
 apiClient.interceptors.request.use(
   (config) => {
+    config.baseURL = getApiBaseUrl();
     if (typeof window !== 'undefined') {
       const token = localStorage.getItem('agent_token');
       if (token) {

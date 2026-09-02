@@ -1,6 +1,14 @@
-export const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000/api/v1';
+export const getApiBaseUrl = (): string => {
+  if (process.env.NEXT_PUBLIC_API_URL) {
+    return process.env.NEXT_PUBLIC_API_URL;
+  }
+  return 'http://localhost:8000/api/v1';
+};
+
+export const API_BASE_URL = getApiBaseUrl();
 export const WS_BASE_HOST = process.env.NEXT_PUBLIC_WS_HOST || 'localhost:8000';
 export const WS_BASE_URL = process.env.NEXT_PUBLIC_WS_URL || 'ws://localhost:8000/ws/chat';
+
 
 export const STATUS_CONFIG: Record<
   string,
