@@ -47,6 +47,18 @@ export interface Message {
   created_at: string;
 }
 
+export interface QuickResponse {
+  id: number;
+  title: string;
+  content: string;
+  created_at: string;
+}
+
+export interface QuickResponseCreateSchema {
+  title: string;
+  content: string;
+}
+
 export interface Conversation {
   id: number;
   user_id: number;

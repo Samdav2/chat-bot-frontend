@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '@/hooks/useAuth';
+import { useQuickResponses } from '@/hooks/useQuickResponses';
 import { apiClient } from '@/lib/api-client';
 import { Agent, ApiResponse } from '@/types/support';
 import {
@@ -20,11 +21,16 @@ import {
   EyeOff,
   Bell,
   Check,
+  MessageSquarePlus,
+  Plus,
+  Trash2,
+  Loader2,
 } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
 
 export default function SettingsPage() {
   const { agent, updateAgent, toggleOnlineStatus } = useAuth();
+  const { quickResponses, isLoading: isSnippetsLoading, addQuickResponse, deleteQuickResponse } = useQuickResponses();
 
   // Profile form state
   const [fullName, setFullName] = useState(agent?.full_name || '');
@@ -37,6 +43,11 @@ export default function SettingsPage() {
   const [isSaving, setIsSaving] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
+
+  // New Quick Response form state
+  const [newTitle, setNewTitle] = useState('');
+  const [newContent, setNewContent] = useState('');
+  const [isAddingSnippet, setIsAddingSnippet] = useState(false);
 
   // Sync state if agent object updates from context
   useEffect(() => {
@@ -92,6 +103,28 @@ export default function SettingsPage() {
     }
   };
 
+  const handleAddSnippet = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!newTitle.trim() || !newContent.trim() || isAddingSnippet) return;
+
+    setIsAddingSnippet(true);
+    const success = await addQuickResponse(newTitle.trim(), newContent.trim());
+    if (success) {
+      setNewTitle('');
+      setNewContent('');
+      setSuccessMessage('New quick response snippet saved!');
+    } else {
+      setErrorMessage('Failed to save quick response snippet.');
+    }
+    setIsAddingSnippet(false);
+  };
+
+  const handleDeleteSnippet = async (id: number) => {
+    if (confirm('Are you sure you want to delete this snippet?')) {
+      await deleteQuickResponse(id);
+    }
+  };
+
   return (
     <div className="flex-1 overflow-y-auto bg-slate-950 text-slate-100 p-6 space-y-6">
       {/* Header Bar */}
@@ -101,10 +134,10 @@ export default function SettingsPage() {
             <div className="p-2 rounded-xl bg-indigo-600/20 text-indigo-400 border border-indigo-500/30">
               <Settings className="w-5 h-5" />
             </div>
-            <h1 className="text-xl font-bold tracking-tight">Agent Account & Notification Preferences</h1>
+            <h1 className="text-xl font-bold tracking-tight">Agent Account & Quick Response Settings</h1>
           </div>
           <p className="text-xs text-slate-400 mt-1">
-            Manage your personal profile, update password, and configure instant alert notifications.
+            Manage your personal profile, saved canned snippets, and alert notifications.
           </p>
         </div>
       </div>
@@ -246,7 +279,7 @@ export default function SettingsPage() {
               </div>
             </div>
 
-            {/* Save Button */}
+            {/* Save Profile Button */}
             <div className="flex justify-end">
               <Button
                 type="submit"
@@ -260,6 +293,93 @@ export default function SettingsPage() {
               </Button>
             </div>
           </form>
+
+          {/* Card 3: Quick Responses Management */}
+          <div className="bg-slate-900/90 border border-slate-800 rounded-2xl p-6 shadow-xl space-y-4">
+            <div className="flex items-center justify-between border-b border-slate-800/80 pb-3">
+              <h2 className="text-sm font-bold text-slate-200 flex items-center gap-2">
+                <MessageSquarePlus className="w-4 h-4 text-indigo-400" /> Saved Quick Responses & Snippets
+              </h2>
+              <span className="text-[10px] text-slate-500 font-mono">{quickResponses.length} Saved</span>
+            </div>
+
+            <p className="text-xs text-slate-400">
+              Create reusable message templates for your support chat. You can select these directly from the chat window.
+            </p>
+
+            {/* Form to create new snippet */}
+            <form onSubmit={handleAddSnippet} className="p-4 bg-slate-950 border border-slate-800 rounded-xl space-y-3">
+              <div className="space-y-1">
+                <label className="text-xs font-semibold text-slate-300">Snippet Title</label>
+                <input
+                  type="text"
+                  placeholder="e.g. Order Refund Guide"
+                  value={newTitle}
+                  onChange={(e) => setNewTitle(e.target.value)}
+                  required
+                  className="w-full text-xs bg-slate-900 text-slate-100 placeholder-slate-600 border border-slate-800 rounded-lg px-3 py-2 focus:border-indigo-500 outline-none"
+                />
+              </div>
+
+              <div className="space-y-1">
+                <label className="text-xs font-semibold text-slate-300">Snippet Message Content</label>
+                <textarea
+                  rows={3}
+                  placeholder="Enter standard reply message text..."
+                  value={newContent}
+                  onChange={(e) => setNewContent(e.target.value)}
+                  required
+                  className="w-full text-xs bg-slate-900 text-slate-100 placeholder-slate-600 border border-slate-800 rounded-lg px-3 py-2 focus:border-indigo-500 outline-none resize-none"
+                />
+              </div>
+
+              <div className="flex justify-end">
+                <button
+                  type="submit"
+                  disabled={isAddingSnippet || !newTitle.trim() || !newContent.trim()}
+                  className="inline-flex items-center gap-1.5 text-xs font-semibold bg-indigo-600 hover:bg-indigo-500 text-white px-4 py-2 rounded-lg transition-colors disabled:opacity-50 cursor-pointer"
+                >
+                  {isAddingSnippet ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Plus className="w-4 h-4" />}
+                  <span>Save Quick Response</span>
+                </button>
+              </div>
+            </form>
+
+            {/* List of saved snippets */}
+            <div className="space-y-2 pt-2">
+              <h3 className="text-xs font-bold text-slate-300">Your Saved Snippets</h3>
+              {isSnippetsLoading ? (
+                <div className="flex items-center gap-2 text-xs text-slate-400 py-3">
+                  <Loader2 className="w-4 h-4 animate-spin text-indigo-400" />
+                  <span>Loading quick responses...</span>
+                </div>
+              ) : quickResponses.length === 0 ? (
+                <p className="text-xs text-slate-500 py-2">No custom quick responses saved yet.</p>
+              ) : (
+                <div className="grid grid-cols-1 gap-2.5 max-h-60 overflow-y-auto pr-1">
+                  {quickResponses.map((snippet) => (
+                    <div
+                      key={snippet.id}
+                      className="p-3 bg-slate-950 border border-slate-800/80 rounded-xl flex items-start justify-between gap-3 group hover:border-indigo-900/60 transition-colors"
+                    >
+                      <div className="space-y-1 min-w-0 flex-1">
+                        <p className="text-xs font-bold text-indigo-300 truncate">{snippet.title}</p>
+                        <p className="text-xs text-slate-300 break-words">{snippet.content}</p>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => handleDeleteSnippet(snippet.id)}
+                        className="p-1.5 text-slate-500 hover:text-rose-400 transition-colors cursor-pointer"
+                        title="Delete snippet"
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          </div>
         </div>
 
         {/* Right Column: Support Agent Presence & Status Card */}
