@@ -11,7 +11,7 @@ export function useQuickResponses() {
     setIsLoading(true);
     setError(null);
     try {
-      const response = await apiClient.get<ApiResponse<QuickResponse[]>>('/api/v1/quick-responses');
+      const response = await apiClient.get<ApiResponse<QuickResponse[]>>('/quick-responses');
       if (response.data.success) {
         setQuickResponses(response.data.data);
       }
@@ -29,7 +29,7 @@ export function useQuickResponses() {
 
   const addQuickResponse = async (title: string, content: string): Promise<boolean> => {
     try {
-      const response = await apiClient.post<ApiResponse<QuickResponse>>('/api/v1/quick-responses', {
+      const response = await apiClient.post<ApiResponse<QuickResponse>>('/quick-responses', {
         title,
         content,
       });
@@ -46,7 +46,7 @@ export function useQuickResponses() {
 
   const deleteQuickResponse = async (id: number): Promise<boolean> => {
     try {
-      const response = await apiClient.delete<ApiResponse<{ id: number }>>(`/api/v1/quick-responses/${id}`);
+      const response = await apiClient.delete<ApiResponse<{ id: number }>>(`/quick-responses/${id}`);
       if (response.data.success) {
         setQuickResponses((prev) => prev.filter((item) => item.id !== id));
         return true;
