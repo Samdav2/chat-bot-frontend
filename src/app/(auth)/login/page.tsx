@@ -189,6 +189,7 @@ export default function LoginPage() {
             <LogIn className="w-3.5 h-3.5" />
             <span>Sign In</span>
           </button>
+          {/*** 
           <button
             type="button"
             onClick={() => {
@@ -205,6 +206,7 @@ export default function LoginPage() {
             <UserPlus className="w-3.5 h-3.5" />
             <span>Create Account</span>
           </button>
+          ***/}
         </div>
 
         {/* Status Notifications */}
@@ -275,6 +277,7 @@ export default function LoginPage() {
         )}
 
         {/* Register Account Form */}
+        {/*** 
         {mode === 'register' && (
           <form onSubmit={handleRegisterSubmit} className="space-y-3.5">
             <div className="space-y-1">
@@ -372,6 +375,7 @@ export default function LoginPage() {
             </Button>
           </form>
         )}
+          **/}
 
         {/* Demo Quick Fill Helper */}
         {mode === 'login' && (
